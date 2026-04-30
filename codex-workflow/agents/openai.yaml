@@ -1,0 +1,4 @@
+interface:
+  display_name: "Codex Workflow"
+  short_description: "Pragmatic coding workflow and engineering style"
+  default_prompt: "Use $codex-workflow to handle this coding task with the established inspect-plan-edit-verify workflow."
