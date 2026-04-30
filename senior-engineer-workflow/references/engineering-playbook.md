@@ -6,6 +6,7 @@
 2. Determine whether the user wants code changes, investigation, documentation, review, or an explanation.
 3. If the task is actionable, proceed with local inspection and implementation.
 4. Ask only when missing information makes the next step risky or impossible.
+5. Do not stop at a proposal when the requested change can be completed safely in the current turn.
 
 ## Repository Inspection
 
@@ -22,6 +23,8 @@ Check local instructions and configs first:
 
 - `AGENTS.md` or other host-specific instruction files
 - package or tool configs such as `pyproject.toml`, `package.json`, `pytest.ini`
+
+Prefer parallel file reads when the host environment supports them. Keep exploration focused on files that can affect the requested behavior.
 
 ## Bug Investigation
 
@@ -48,6 +51,8 @@ Describe debugging with direct cause chains:
 5. Prefer structured parsers/APIs over ad hoc string manipulation when available.
 6. Use `apply_patch` for manual edits.
 7. Avoid unrelated formatting churn.
+8. Preserve user changes in dirty files; never reset or overwrite unrelated work.
+9. Review the diff before reporting success.
 
 ## Verification Workflow
 
@@ -88,7 +93,7 @@ For encrypted scraper output, a safe flow is:
 1. Run `git status --short`.
 2. Ignore unrelated untracked or modified files.
 3. Stage only files changed for the task.
-4. Commit durable project changes once per turn when appropriate.
+4. Commit durable project changes only when the user or project workflow expects a local snapshot.
 5. Use Conventional Commit style.
 6. Never contact remotes unless explicitly requested.
 

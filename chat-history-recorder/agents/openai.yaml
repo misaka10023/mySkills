@@ -1,0 +1,4 @@
+interface:
+  display_name: "Chat History Recorder"
+  short_description: "Record conversation turns with chat-history-recorder-mcp"
+  default_prompt: "Use $chat-history-recorder to record this turn before the final response."

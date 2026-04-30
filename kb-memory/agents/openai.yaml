@@ -1,0 +1,4 @@
+interface:
+  display_name: "KB Memory"
+  short_description: "Store durable reusable knowledge with kb-mcp"
+  default_prompt: "Use $kb-memory to save durable reusable knowledge when it meets the write criteria."

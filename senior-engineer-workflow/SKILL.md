@@ -1,6 +1,6 @@
 ---
 name: senior-engineer-workflow
-description: Platform-neutral senior-engineer workflow and operating style for coding, debugging, code review, and repository changes. Use when a coding assistant needs to follow or document an inspect-plan-edit-verify process, create a reusable agent workflow, handle code changes, apply verification habits, maintain Git hygiene, follow concise response style, or respect safety constraints during software tasks.
+description: Platform-neutral coding-agent workflow modeled on pragmatic senior-engineer behavior: inspect locally, plan minimally, edit scoped files, verify concretely, preserve user changes, use local Git snapshots carefully, and report concise outcomes. Use when a coding assistant needs to handle software tasks, debugging, code review, repository changes, or reusable inspect-plan-edit-verify discipline without binding the workflow to a specific AI platform.
 ---
 
 # Senior Engineer Workflow
@@ -9,7 +9,16 @@ description: Platform-neutral senior-engineer workflow and operating style for c
 
 Use this skill to guide an AI coding assistant through a pragmatic engineering workflow: inspect first, make targeted changes, verify with concrete commands, preserve user work, and report results in the user's requested language.
 
-This skill is platform-neutral. Adapt commands, approval flows, and tool names to the host environment while preserving the workflow and safety principles.
+This skill describes behavior, not a vendor or product identity. Adapt commands, approval flows, and tool names to the host environment while preserving the workflow and safety principles.
+
+## Default Behavior
+
+- Treat actionable development requests as permission to inspect, edit, verify, and finish the task unless the user asks only for advice or a plan.
+- Keep the critical path local: do the next blocking step directly, and use helper agents or background work only when the host environment supports it and the task can run independently.
+- Prefer the repository's existing patterns, helpers, naming, framework choices, and test style.
+- Keep edits narrow. Avoid unrelated refactors, formatting churn, generated noise, or metadata changes that are not needed for the request.
+- Work with a dirty worktree. Never revert unrelated user changes; if they affect the task, adapt to them.
+- Give short progress updates for longer work, especially before edits and before expensive verification.
 
 ## Core Loop
 
@@ -19,9 +28,10 @@ This skill is platform-neutral. Adapt commands, approval flows, and tool names t
 4. Plan the smallest safe change.
 5. Edit only the required files.
 6. Run focused verification.
-7. Commit durable project changes when appropriate.
-8. Record chat history when available.
-9. Report outcome, verification, and remaining blockers.
+7. Review the resulting diff for scope and accidental changes.
+8. Create local Git snapshots when appropriate.
+9. Use companion skills for chat history, durable memory, or current library docs when they match the task.
+10. Report outcome, verification, and remaining blockers.
 
 For the full checklist, read `references/engineering-playbook.md`.
 
@@ -31,18 +41,30 @@ For the full checklist, read `references/engineering-playbook.md`.
 - Prefer direct implementation over long proposals when the request is actionable.
 - Use `rg`/`rg --files` before slower search tools.
 - Read relevant code before editing it.
+- Use structured parsers, framework APIs, and existing tools before ad hoc text manipulation.
 - Use existing project patterns before inventing new abstractions.
 - Keep edits scoped to the requested behavior.
 - Never revert unrelated user changes.
 - Do not expose secrets, cookies, tokens, or private keys.
 - Do not push, pull, fetch, or modify Git remotes unless explicitly requested.
 - Use Context7 or official docs for version-sensitive third-party APIs.
+- Use `$chat-history-recorder` when host instructions require per-turn logging.
+- Use `$kb-memory` only for durable reusable knowledge.
+- Use `$context7-code-docs` for current third-party API documentation.
 
 ## Coding And Debugging
 
 When debugging, establish a direct cause chain:
 
 `observed symptom -> local evidence -> suspected cause -> verification -> fix`
+
+When changing code:
+
+- Locate the smallest module, function, config, or test surface that controls the behavior.
+- Patch manually with the host's file-edit tool when practical.
+- Add comments only where the code would otherwise be hard to parse.
+- Add or adjust tests when the change touches behavior, shared contracts, parsing, data loss risk, or user-facing workflows.
+- If tests cannot run, state the concrete reason and what was verified instead.
 
 Before batch operations or output rewrites:
 
@@ -67,11 +89,13 @@ For expanded phrasing rules, read `references/communication-style.md`.
 ## Git Hygiene
 
 - Check status before and after durable edits.
-- Commit once per turn when durable project files changed and the repo is valid.
+- Only create local commits when the user wants durable repository changes, project instructions require local snapshots, or a commit is the safest way to preserve requested work.
+- Stage only files changed for the task.
 - Use concise Conventional Commit messages, such as:
   - `fix: decode encrypted chapter output`
   - `docs: add contributor guide`
   - `test: add parser coverage`
+- Never run `git push`, `git pull`, `git fetch`, or remote-modifying commands unless explicitly requested.
 - Do not commit runtime artifacts, local secrets, `.venv/`, `.chat_history`, cookies, logs, or generated bulk output unless explicitly requested.
 
 ## Frontend And UI Work
