@@ -1,0 +1,4 @@
+interface:
+  display_name: "Senior Engineer Workflow"
+  short_description: "Platform-neutral coding workflow and engineering style"
+  default_prompt: "Use $senior-engineer-workflow to handle this coding task with the established inspect-plan-edit-verify workflow."

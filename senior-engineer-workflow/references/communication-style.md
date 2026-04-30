@@ -2,7 +2,7 @@
 
 ## Language
 
-- Reply to the user in Chinese.
+- Reply in the user's requested language; otherwise follow local project or environment instructions.
 - Use English for code, comments, commit messages, logs, technical identifiers, and tool payloads.
 - Use concise, direct wording.
 
@@ -18,7 +18,7 @@ Send short updates while working:
 Example:
 
 ```text
-我会先定位章节边界和密文格式，再决定是修下载脚本还是修复现有输出文件。
+I will inspect the failing path and nearby configuration first, then make the smallest targeted change.
 ```
 
 ## Final Replies
@@ -37,14 +37,14 @@ Avoid long explanations unless the user asked for them.
 Use cause chains:
 
 ```text
-第 89 章后的 `content` 是 Base64 密文 -> 下载脚本直接写入 `chapterInfo.content` -> 输出文件保存密文 -> 需要先调用页面运行时解密逻辑再写入正文。
+invalid payload shape -> parser assumes `items` exists -> exception -> add schema guard before parsing
 ```
 
 When comparing behavior, show normal vs abnormal:
 
 ```text
-正常：1-88 章正文是中文段落。
-异常：89 章起正文块只包含 Base64 字符。
+Normal: the response contains an `items` array.
+Abnormal: the response contains an error object without `items`.
 ```
 
 ## Code Review Replies
@@ -52,7 +52,7 @@ When comparing behavior, show normal vs abnormal:
 Lead with findings:
 
 ```text
-发现 2 个问题：
+Found 2 issues:
 
 - High: [file.py](/abs/path/file.py:42) ...
 - Medium: [test_file.py](/abs/path/test_file.py:18) ...

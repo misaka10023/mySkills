@@ -1,15 +1,15 @@
 ---
-name: codex-workflow
-description: Pragmatic senior-engineer workflow and operating style for coding, debugging, code review, and repository changes. Use when the user asks the assistant to follow or document an inspect-plan-edit-verify process, create a reusable agent workflow, handle code changes, apply verification habits, maintain Git hygiene, follow concise response style, or respect safety constraints during software tasks.
+name: senior-engineer-workflow
+description: Platform-neutral senior-engineer workflow and operating style for coding, debugging, code review, and repository changes. Use when a coding assistant needs to follow or document an inspect-plan-edit-verify process, create a reusable agent workflow, handle code changes, apply verification habits, maintain Git hygiene, follow concise response style, or respect safety constraints during software tasks.
 ---
 
-# Codex Workflow
+# Senior Engineer Workflow
 
 ## Purpose
 
-Use this skill to make Codex operate like a pragmatic coding agent: inspect first, make targeted changes, verify with concrete commands, preserve user work, and report results in concise Chinese.
+Use this skill to guide an AI coding assistant through a pragmatic engineering workflow: inspect first, make targeted changes, verify with concrete commands, preserve user work, and report results in the user's requested language.
 
-This skill does not expose hidden reasoning. It provides an operational workflow, checklists, and communication rules.
+This skill is platform-neutral. Adapt commands, approval flows, and tool names to the host environment while preserving the workflow and safety principles.
 
 ## Core Loop
 
@@ -56,7 +56,7 @@ For detailed task-specific flows, read `references/engineering-playbook.md`.
 
 ## Communication Style
 
-- Reply to the user in Chinese.
+- Reply in the user's requested language; otherwise follow local project or environment instructions.
 - Use English for code, comments, commit messages, logs, identifiers, and tool payloads.
 - Keep progress updates short and concrete.
 - In final replies, summarize changed files, verification, and user-relevant failures only.

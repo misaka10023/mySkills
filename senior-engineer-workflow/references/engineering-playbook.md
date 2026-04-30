@@ -20,9 +20,7 @@ Get-Content -Path path\to\file.py -TotalCount 120
 
 Check local instructions and configs first:
 
-- `AGENTS.md`
-- `CLAUDE.md`
-- `.claude/settings.json`
+- `AGENTS.md` or other host-specific instruction files
 - package or tool configs such as `pyproject.toml`, `package.json`, `pytest.ini`
 
 ## Bug Investigation
@@ -61,7 +59,7 @@ Choose the narrowest proof that matters:
 - Batch rewrite: verify counts and sample records before and after.
 - Frontend change: run the dev server and inspect screenshots when visual correctness matters.
 
-If a command fails because of sandbox or network restrictions and the command is necessary, rerun it with explicit escalation.
+If a command fails because of sandbox or network restrictions and the command is necessary, follow the host environment's approval or escalation process.
 
 ## Batch Or File Rewrite Safety
 
