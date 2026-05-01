@@ -1,4 +1,4 @@
 interface:
   display_name: "Context7 Code Docs"
-  short_description: "Fetch current third-party API docs with Context7"
-  default_prompt: "Use $context7-code-docs before code work involving version-sensitive third-party APIs."
+  short_description: "Fetch current library, framework, and API docs with Context7"
+  default_prompt: "Use $context7-code-docs before answering or changing code that depends on current third-party library, framework, SDK, or API documentation."
