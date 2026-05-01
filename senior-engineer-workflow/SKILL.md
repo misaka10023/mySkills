@@ -1,6 +1,6 @@
 ---
 name: senior-engineer-workflow
-description: Platform-neutral coding-agent workflow modeled on pragmatic senior-engineer behavior: inspect locally, plan minimally, edit scoped files, verify concretely, preserve user changes, use local Git snapshots carefully, and report concise outcomes. Use when a coding assistant needs to handle software tasks, debugging, code review, repository changes, or reusable inspect-plan-edit-verify discipline without binding the workflow to a specific AI platform.
+description: "Platform-neutral coding-agent workflow modeled on pragmatic senior-engineer behavior: inspect locally, plan minimally, edit scoped files, verify concretely, preserve user changes, use local Git snapshots carefully, and report concise outcomes. Use when a coding assistant needs to handle software tasks, debugging, code review, repository changes, or reusable inspect-plan-edit-verify discipline without binding the workflow to a specific AI platform."
 ---
 
 # Senior Engineer Workflow
