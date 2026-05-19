@@ -1,28 +1,46 @@
 ---
 name: context7-code-docs
-description: Fetch up-to-date, version-specific documentation with Context7 for code work. Use when the user asks about libraries, frameworks, SDKs, integrations, API references, setup/configuration, code examples, migrations, or when implementing, modifying, debugging, configuring, or reviewing code that depends on third-party or version-sensitive APIs.
+description: Fetch up-to-date, version-specific documentation with the bundled Context7 client script. Use when the user asks about libraries, frameworks, SDKs, integrations, API references, setup/configuration, code examples, migrations, or when implementing, modifying, debugging, configuring, or reviewing code that depends on third-party or version-sensitive APIs.
 ---
 
 # Context7 Code Docs
 
-Use this skill before answering or changing code that depends on current third-party documentation. Prefer Context7 over memory for library APIs, framework behavior, setup steps, middleware, migrations, and code examples.
+Use this skill before answering or changing code that depends on current third-party documentation. Prefer the bundled Context7 client script over memory for library APIs, framework behavior, setup steps, middleware, migrations, and code examples.
+
+This skill does not require Context7 to be registered as a global host MCP server. It uses `scripts/context7_client.py` to start the local Context7 MCP stdio server and call its tools directly.
 
 ## Trigger Examples
 
-Use Context7 when the user:
+Use this skill when the user:
 
 - Asks setup or configuration questions, such as framework middleware, auth providers, build tools, or SDK clients.
 - Requests code involving libraries, frameworks, SDKs, or integrations.
 - Needs API references, method names, options, migration details, or compatibility behavior.
 - Mentions specific frameworks or libraries such as React, Vue, Svelte, Next.js, Prisma, Supabase, Tailwind, Express, FastAPI, Django, or similar tools.
 
+## Tool
+
+Run the bundled script from the repository root:
+
+```powershell
+python context7-code-docs\scripts\context7_client.py resolve "next.js"
+python context7-code-docs\scripts\context7_client.py docs /vercel/next.js --topic routing --mode code --page 1
+```
+
+Defaults:
+
+- command: `D:\Pe\Project\codex-mcp\context7\node_modules\.bin\context7-mcp.cmd`
+- cwd: `D:\Pe\Project\codex-mcp\context7`
+
+Override with `CONTEXT7_MCP_COMMAND`, `CONTEXT7_MCP_CWD`, or the script's `--command` / `--cwd` flags when needed.
+
 ## Fetch Workflow
 
 1. Identify the relevant library, framework, SDK, or integration. Determine the version from local files when possible.
-2. Resolve the library with Context7 before fetching docs unless the user already provided an exact Context7-compatible ID such as `/org/project` or `/org/project/version`.
+2. Resolve the library with `scripts/context7_client.py resolve` before fetching docs unless the user already provided an exact Context7-compatible ID such as `/org/project` or `/org/project/version`.
 3. Select the best match using exact or closest name, official/primary source status, version match, documentation coverage, reputation, and benchmark score when available.
-4. Fetch focused docs for the user's specific API, config, middleware, migration, error, or code example. Use `mode="code"` for API usage and examples; use `mode="info"` for conceptual or architectural questions.
-5. If the first result is insufficient, fetch the next page, narrow the topic, resolve a more specific library ID, or use a Context7 research/deep mode when the host implementation supports it before falling back.
+4. Fetch focused docs with `scripts/context7_client.py docs` for the user's specific API, config, middleware, migration, error, or code example. Use `--mode code` for API usage and examples; use `--mode info` for conceptual or architectural questions.
+5. If the first result is insufficient, fetch the next page, narrow the topic, resolve a more specific library ID, or use another host-supported research path before falling back.
 6. Use only the necessary details in code or explanation. Cite the relevant library version when it matters.
 7. Mention Context7 usage in chat history logging when that logging is available.
 
@@ -36,4 +54,4 @@ Use Context7 when the user:
 
 ## Fallback
 
-If Context7 is unavailable or does not contain enough detail, proceed with local code and built-in knowledge only when reasonable. Mark version-sensitive details as uncertain, and prefer primary or official sources if another documentation path is available.
+If the bundled script, local Context7 install, or Context7 result is unavailable or insufficient, proceed with local code and built-in knowledge only when reasonable. Mark version-sensitive details as uncertain, and prefer primary or official sources if another documentation path is available.
