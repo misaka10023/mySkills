@@ -1,4 +1,4 @@
 interface:
   display_name: "Senior Engineer Workflow"
-  short_description: "Detailed senior-engineer workflow for accurate agentic software work"
-  default_prompt: "Use $senior-engineer-workflow to handle this software task with disciplined inspection, source validation, debugging, implementation, verification, Git hygiene, and concise reporting."
+  short_description: "Routed senior-engineer workflow for accurate agentic software work"
+  default_prompt: "Use $senior-engineer-workflow to handle this software task with evidence-based inspection, scoped implementation, verification, review, architecture judgment, security awareness, Git hygiene, and concise delivery."
