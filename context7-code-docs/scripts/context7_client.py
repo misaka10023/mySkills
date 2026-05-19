@@ -11,6 +11,8 @@ import argparse
 import json
 import os
 import queue
+import shlex
+import shutil
 import subprocess
 import sys
 import threading
@@ -18,8 +20,8 @@ from pathlib import Path
 from typing import Any
 
 
-DEFAULT_CONTEXT7_ROOT = Path(r"D:\Pe\Project\codex-mcp\context7")
-DEFAULT_CONTEXT7_CMD = DEFAULT_CONTEXT7_ROOT / "node_modules" / ".bin" / "context7-mcp.cmd"
+SCRIPT_DIR = Path(__file__).resolve().parent
+SKILL_DIR = SCRIPT_DIR.parent
 
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -32,7 +34,7 @@ class McpError(RuntimeError):
 
 
 class McpStdioClient:
-    def __init__(self, command: Path, cwd: Path, timeout: float = 60.0) -> None:
+    def __init__(self, command: list[str], cwd: Path | None, timeout: float = 60.0) -> None:
         self.command = command
         self.cwd = cwd
         self.timeout = timeout
@@ -40,20 +42,21 @@ class McpStdioClient:
         self._stderr_lines: list[str] = []
         self._stdout_queue: queue.Queue[str | None] = queue.Queue()
 
-        if not command.exists():
-            raise McpError(f"Context7 command not found: {command}")
-        if not cwd.exists():
+        if not command:
+            raise McpError("Context7 command is empty.")
+        if cwd is not None and not cwd.exists():
             raise McpError(f"Context7 cwd not found: {cwd}")
 
         popen_args: list[str]
-        if os.name == "nt" and command.suffix.lower() in {".cmd", ".bat"}:
-            popen_args = ["cmd.exe", "/d", "/s", "/c", str(command)]
+        command_path = Path(command[0])
+        if os.name == "nt" and command_path.suffix.lower() in {".cmd", ".bat"}:
+            popen_args = ["cmd.exe", "/d", "/s", "/c", subprocess.list2cmdline(command)]
         else:
-            popen_args = [str(command)]
+            popen_args = command
 
         self.proc = subprocess.Popen(
             popen_args,
-            cwd=str(cwd),
+            cwd=str(cwd) if cwd is not None else None,
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
@@ -124,9 +127,103 @@ def extract_text(result: Any) -> str:
     return json.dumps(result, ensure_ascii=False, indent=2)
 
 
+def executable_names() -> list[str]:
+    if os.name == "nt":
+        return ["context7-mcp.cmd", "context7-mcp.exe", "context7-mcp"]
+    return ["context7-mcp", "context7-mcp.cmd"]
+
+
+def split_command(value: str) -> list[str]:
+    try:
+        parts = shlex.split(value, posix=os.name != "nt")
+    except ValueError as exc:
+        raise McpError(f"Invalid command string: {value}") from exc
+    if not parts:
+        raise McpError("Command string is empty.")
+    return parts
+
+
+def is_path_like(value: str) -> bool:
+    separators = [sep for sep in (os.sep, os.altsep) if sep]
+    return value.startswith(("~", ".")) or any(sep in value for sep in separators)
+
+
+def resolve_executable(value: str) -> str:
+    expanded = os.path.expandvars(os.path.expanduser(value))
+    if is_path_like(expanded):
+        path = Path(expanded)
+        if path.exists():
+            return str(path)
+        raise McpError(f"Context7 command not found: {path}")
+
+    found = shutil.which(expanded)
+    if found:
+        return found
+    raise McpError(f"Context7 command not found on PATH: {expanded}")
+
+
+def parse_args_list(values: list[str] | None) -> list[str]:
+    parsed: list[str] = []
+    for value in values or []:
+        parsed.extend(split_command(value))
+    return parsed
+
+
+def local_command_candidates(cwd_hint: Path | None) -> list[tuple[Path, Path]]:
+    roots: list[Path] = []
+    if cwd_hint is not None:
+        roots.append(cwd_hint)
+    roots.extend([Path.cwd(), SKILL_DIR])
+
+    candidates: list[tuple[Path, Path]] = []
+    seen: set[Path] = set()
+    for root in roots:
+        root = root.expanduser().resolve()
+        if root in seen:
+            continue
+        seen.add(root)
+        for name in executable_names():
+            candidates.append((root / "node_modules" / ".bin" / name, root))
+    return candidates
+
+
+def resolve_cwd(value: str | None) -> Path | None:
+    if not value:
+        return None
+    cwd = Path(os.path.expandvars(os.path.expanduser(value)))
+    if not cwd.exists():
+        raise McpError(f"Context7 cwd not found: {cwd}")
+    return cwd
+
+
+def resolve_command(args: argparse.Namespace) -> tuple[list[str], Path | None]:
+    cwd = resolve_cwd(args.cwd or os.environ.get("CONTEXT7_MCP_CWD"))
+    raw_command = args.command or os.environ.get("CONTEXT7_MCP_COMMAND")
+    extra_args = parse_args_list(args.command_arg) + parse_args_list(
+        [os.environ["CONTEXT7_MCP_ARGS"]] if os.environ.get("CONTEXT7_MCP_ARGS") else None
+    )
+
+    if raw_command:
+        parts = split_command(raw_command)
+        return [resolve_executable(parts[0]), *parts[1:], *extra_args], cwd
+
+    for candidate, root in local_command_candidates(cwd):
+        if candidate.exists():
+            return [str(candidate), *extra_args], cwd or root
+
+    for name in executable_names():
+        found = shutil.which(name)
+        if found:
+            return [found, *extra_args], cwd
+
+    raise McpError(
+        "Context7 command not found. Install context7-mcp on PATH, place it in "
+        "node_modules/.bin, or set CONTEXT7_MCP_COMMAND/--command."
+    )
+
+
 def build_client(args: argparse.Namespace) -> McpStdioClient:
-    command = Path(args.command or os.environ.get("CONTEXT7_MCP_COMMAND", DEFAULT_CONTEXT7_CMD))
-    cwd = Path(args.cwd or os.environ.get("CONTEXT7_MCP_CWD", DEFAULT_CONTEXT7_ROOT))
+    command, cwd = resolve_command(args)
     client = McpStdioClient(command=command, cwd=cwd, timeout=args.timeout)
     client.request(
         "initialize",
@@ -141,8 +238,9 @@ def build_client(args: argparse.Namespace) -> McpStdioClient:
 
 
 def add_common_args(parser: argparse.ArgumentParser) -> None:
-    parser.add_argument("--command", help="Path to context7-mcp command. Defaults to CONTEXT7_MCP_COMMAND or local install.")
-    parser.add_argument("--cwd", help="Working directory for context7-mcp. Defaults to CONTEXT7_MCP_CWD or local install.")
+    parser.add_argument("--command", help="context7-mcp executable name/path or quoted command line.")
+    parser.add_argument("--command-arg", action="append", help="Extra argument for the Context7 command. May be repeated.")
+    parser.add_argument("--cwd", help="Working directory for context7-mcp. Defaults to CONTEXT7_MCP_CWD, local install root, or current directory.")
     parser.add_argument("--timeout", type=float, default=60.0, help="Request timeout in seconds.")
 
 
@@ -161,9 +259,24 @@ def main() -> int:
     docs_parser.add_argument("--mode", choices=["code", "info"], default="code")
     docs_parser.add_argument("--page", type=int, default=1)
 
+    doctor_parser = subparsers.add_parser("doctor", help="Show resolved Context7 command and optionally test connection.")
+    add_common_args(doctor_parser)
+    doctor_parser.add_argument("--connect", action="store_true", help="Initialize the server and list available tools.")
+
     args = parser.parse_args()
     client: McpStdioClient | None = None
     try:
+        if args.command_name == "doctor":
+            command, cwd = resolve_command(args)
+            print("command: " + " ".join(command))
+            print("cwd: " + (str(cwd) if cwd is not None else "<current process cwd>"))
+            if not args.connect:
+                return 0
+            client = build_client(args)
+            result = client.request("tools/list")
+            print(extract_text(result))
+            return 0
+
         client = build_client(args)
         if args.command_name == "resolve":
             result = client.request("tools/call", {"name": "resolve-library-id", "arguments": {"libraryName": args.library_name}})

@@ -7,7 +7,7 @@ description: Fetch up-to-date, version-specific documentation with the bundled C
 
 Use this skill before answering or changing code that depends on current third-party documentation. Prefer the bundled Context7 client script over memory for library APIs, framework behavior, setup steps, middleware, migrations, and code examples.
 
-This skill does not require Context7 to be registered as a global host MCP server. It uses `scripts/context7_client.py` to start the local Context7 MCP stdio server and call its tools directly.
+This skill does not require Context7 to be registered as a global host MCP server. It uses `scripts/context7_client.py` to discover and start the local Context7 MCP stdio server, then call its tools directly.
 
 ## Trigger Examples
 
@@ -20,29 +20,32 @@ Use this skill when the user:
 
 ## Tool
 
-Run the bundled script from the repository root:
+Run the bundled script from the repository root. The forward-slash paths work on macOS, Linux, and Windows:
 
-```powershell
-python context7-code-docs\scripts\context7_client.py resolve "next.js"
-python context7-code-docs\scripts\context7_client.py docs /vercel/next.js --topic routing --mode code --page 1
+```bash
+python context7-code-docs/scripts/context7_client.py resolve "next.js"
+python context7-code-docs/scripts/context7_client.py docs /vercel/next.js --topic routing --mode code --page 1
+python context7-code-docs/scripts/context7_client.py doctor
 ```
 
 Defaults:
 
-- command: `D:\Pe\Project\codex-mcp\context7\node_modules\.bin\context7-mcp.cmd`
-- cwd: `D:\Pe\Project\codex-mcp\context7`
+- command discovery: `CONTEXT7_MCP_COMMAND`, local `node_modules/.bin`, then `PATH`
+- cwd discovery: `CONTEXT7_MCP_CWD`, discovered local install root, then the current process directory
+- extra args: `CONTEXT7_MCP_ARGS` or repeated `--command-arg`
 
-Override with `CONTEXT7_MCP_COMMAND`, `CONTEXT7_MCP_CWD`, or the script's `--command` / `--cwd` flags when needed.
+Override with `CONTEXT7_MCP_COMMAND`, `CONTEXT7_MCP_CWD`, or the script's `--command` / `--cwd` flags when needed. Quote `CONTEXT7_MCP_COMMAND` if it contains spaces or command arguments.
 
 ## Fetch Workflow
 
 1. Identify the relevant library, framework, SDK, or integration. Determine the version from local files when possible.
-2. Resolve the library with `scripts/context7_client.py resolve` before fetching docs unless the user already provided an exact Context7-compatible ID such as `/org/project` or `/org/project/version`.
-3. Select the best match using exact or closest name, official/primary source status, version match, documentation coverage, reputation, and benchmark score when available.
-4. Fetch focused docs with `scripts/context7_client.py docs` for the user's specific API, config, middleware, migration, error, or code example. Use `--mode code` for API usage and examples; use `--mode info` for conceptual or architectural questions.
-5. If the first result is insufficient, fetch the next page, narrow the topic, resolve a more specific library ID, or use another host-supported research path before falling back.
-6. Use only the necessary details in code or explanation. Cite the relevant library version when it matters.
-7. Mention Context7 usage in chat history logging when that logging is available.
+2. Run `scripts/context7_client.py doctor` if command discovery may differ across macOS, Linux, or Windows.
+3. Resolve the library with `scripts/context7_client.py resolve` before fetching docs unless the user already provided an exact Context7-compatible ID such as `/org/project` or `/org/project/version`.
+4. Select the best match using exact or closest name, official/primary source status, version match, documentation coverage, reputation, and benchmark score when available.
+5. Fetch focused docs with `scripts/context7_client.py docs` for the user's specific API, config, middleware, migration, error, or code example. Use `--mode code` for API usage and examples; use `--mode info` for conceptual or architectural questions.
+6. If the first result is insufficient, fetch the next page, narrow the topic, resolve a more specific library ID, or use another host-supported research path before falling back.
+7. Use only the necessary details in code or explanation. Cite the relevant library version when it matters.
+8. Mention Context7 usage in chat history logging when that logging is available.
 
 ## Query Guidance
 
