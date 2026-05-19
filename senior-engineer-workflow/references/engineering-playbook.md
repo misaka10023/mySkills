@@ -1,122 +1,60 @@
 # Engineering Playbook
 
-## Request Handling
+Use this reference when a task needs deeper execution detail than the main skill body.
 
-1. Treat the newest user message as authoritative.
-2. Determine whether the user wants code changes, investigation, documentation, review, or an explanation.
-3. If the task is actionable, proceed with local inspection and implementation.
-4. Ask only when missing information makes the next step risky or impossible.
-5. Do not stop at a proposal when the requested change can be completed safely in the current turn.
+## Debugging Checklist
 
-## Repository Inspection
+1. Capture the exact failing command, route, UI action, input, or test.
+2. Confirm whether the failure is deterministic, intermittent, environment-specific, or data-specific.
+3. Identify the first bad boundary: input, validation, transform, persistence, network, render, cache, permission, or external service.
+4. Compare with a known-good path.
+5. Form one hypothesis at a time and verify it with the smallest command, test, log, or code read.
+6. Fix the root cause and remove temporary probes unless they are useful diagnostics.
+7. Add regression coverage when possible.
+8. Re-run the failing proof and one adjacent proof.
 
-Run targeted context gathering before edits:
+## Accuracy Checklist
 
-```powershell
-rg --files
-rg "pattern"
-git status --short
-Get-Content -Path path\to\file.py -TotalCount 120
-```
+- Local code/config beats memory.
+- Official docs beat blog posts for API behavior.
+- Lockfiles and installed versions beat general docs for version-specific behavior.
+- Runtime output beats static assumptions.
+- User requirements beat inferred product preferences.
+- If data is time-sensitive, verify it online or with the relevant live tool.
+- If a conclusion is inferred, label it as inference.
 
-Check local instructions and configs first:
+## Implementation Checklist
 
-- `AGENTS.md` or other host-specific instruction files
-- package or tool configs such as `pyproject.toml`, `package.json`, `pytest.ini`
+- Read nearby code before editing.
+- Reuse local patterns and helpers.
+- Keep contract changes explicit.
+- Prefer typed/structured interfaces when available.
+- Validate inputs at trust boundaries.
+- Preserve backward compatibility unless intentionally changing it.
+- Avoid hidden global state and broad side effects.
+- Keep comments sparse and focused on non-obvious invariants.
 
-Prefer parallel file reads when the host environment supports them. Keep exploration focused on files that can affect the requested behavior.
+## Verification Matrix
 
-## Bug Investigation
+| Change Type | Minimum Useful Verification |
+| --- | --- |
+| Documentation | Read rendered or raw Markdown; validate examples if executable |
+| Unit logic | Run focused unit tests; add missing regression tests |
+| Parser/transform | Test valid, invalid, empty, boundary, and real sample inputs |
+| API/backend | Run route/service tests or local request; check schemas |
+| Frontend/UI | Run app or component test; check screenshot/console/responsive states |
+| Build/tooling | Run focused lint/type/build command |
+| Data migration | Dry run or sample run; verify counts and representative records |
+| Security/auth | Check authorization, input validation, secret handling, logs |
 
-Use this sequence:
+## Failure Response
 
-1. Locate the affected files or data.
-2. Reproduce or inspect the failing case.
-3. Compare normal vs abnormal behavior.
-4. Identify the smallest likely cause.
-5. Verify the cause with a focused command or one representative sample.
-6. Patch the smallest surface.
-7. Re-run the verification.
+When verification fails:
 
-Describe debugging with direct cause chains:
+1. Stop broad editing.
+2. Preserve the failing output.
+3. Update the cause chain with the new evidence.
+4. Fix the next root cause, not every visible symptom.
+5. Re-run the same proof.
 
-`bad input shape -> parser assumes field exists -> exception -> guard missing field`
-
-## Code Change Workflow
-
-1. Read the relevant implementation and nearby helpers.
-2. Reuse existing patterns, helpers, naming, and error handling.
-3. Keep changes local to the requested behavior.
-4. Add comments only where the code would otherwise be hard to parse.
-5. Prefer structured parsers/APIs over ad hoc string manipulation when available.
-6. Use `apply_patch` for manual edits.
-7. Avoid unrelated formatting churn.
-8. Preserve user changes in dirty files; never reset or overwrite unrelated work.
-9. Review the diff before reporting success.
-
-## Verification Workflow
-
-Choose the narrowest proof that matters:
-
-- Unit or parser change: run the specific test or script.
-- CLI/script change: run the command on a minimal sample.
-- Web/API scraper change: fetch or render one representative item first.
-- Batch rewrite: verify counts and sample records before and after.
-- Frontend change: run the dev server and inspect screenshots when visual correctness matters.
-
-If a command fails because of sandbox or network restrictions and the command is necessary, follow the host environment's approval or escalation process.
-
-## Batch Or File Rewrite Safety
-
-Before overwriting important output:
-
-1. Parse record boundaries.
-2. Count source records.
-3. Verify one target record can be transformed correctly.
-4. Write to a new file or create a backup when loss is possible.
-5. Replace only the affected ranges.
-6. Count output records again.
-7. Search for residual failure markers.
-
-For encrypted scraper output, a safe flow is:
-
-1. Identify the first encrypted chapter.
-2. Confirm previous chapters are plain text.
-3. Fetch or render one encrypted chapter.
-4. Confirm decoded text is readable Chinese and not Base64.
-5. Integrate the decoder.
-6. Rewrite only encrypted chapter bodies.
-7. Verify first and last rewritten chapters.
-
-## Git Workflow
-
-1. Run `git status --short`.
-2. Ignore unrelated untracked or modified files.
-3. Stage only files changed for the task.
-4. Commit durable project changes only when the user or project workflow expects a local snapshot.
-5. Use Conventional Commit style.
-6. Never contact remotes unless explicitly requested.
-
-Do not commit:
-
-- `.env`, `.env.*`
-- `cookies.json`
-- `.chat_history`
-- `.venv/`
-- `node_modules/`
-- generated output files
-- screenshots containing private data
-- resume ID files
-
-## Review Workflow
-
-For code review requests:
-
-1. Start with findings.
-2. Order by severity.
-3. Include file and line references.
-4. Focus on bugs, regressions, security, data loss, and missing tests.
-5. Add open questions only after findings.
-6. Keep summaries secondary.
-
-If there are no findings, say that directly and mention residual test risk.
+If three fixes cascade into new failures, reassess architecture, ownership boundaries, or test assumptions before continuing.
