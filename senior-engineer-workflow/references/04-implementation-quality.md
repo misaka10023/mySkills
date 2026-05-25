@@ -8,6 +8,7 @@
 - Keep data ownership and side effects clear.
 - Make reversible changes when touching data, migrations, or generated outputs.
 - Introduce abstractions only when they reduce real duplication or clarify a repeated concept.
+- Encode invariants mechanically when possible. A custom lint rule or structural test that enforces a boundary is worth ten paragraphs of instruction. Write error messages to inject remediation guidance directly into agent context.
 
 ## Code Quality Checks
 

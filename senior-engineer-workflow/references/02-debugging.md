@@ -41,3 +41,5 @@ Stop tactical patching when:
 - tests conflict with product requirements,
 - logs indicate production data or security impact,
 - the change requires a broader contract decision.
+
+When progress stalls, switch to harness diagnosis: what capability is missing? Could the agent succeed with a different tool, a missing config file, a runnable setup script, a linter that catches the pattern mechanically, or a piece of project context that lives only outside the repo? Address the missing capability before resuming the fix.

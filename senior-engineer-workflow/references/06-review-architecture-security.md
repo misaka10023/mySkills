@@ -52,3 +52,14 @@ Check:
 - least privilege for tools and credentials.
 
 Security-sensitive changes require narrower edits, stronger verification, and explicit unresolved risks.
+
+## Mechanical Enforcement
+
+Documentation alone does not keep a codebase coherent. Prefer encoding rules so they fail the build:
+
+- Custom lint rules that reject known anti-patterns.
+- Structural tests that verify dependency direction, layer boundaries, and naming conventions.
+- CI checks that validate documentation freshness and cross-links.
+- Error messages written to inject remediation instructions into agent context.
+
+A rule that only lives in prose is a wish. A rule enforced by a linter is a guarantee.

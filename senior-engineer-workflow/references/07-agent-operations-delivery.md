@@ -7,6 +7,14 @@
 - Load reference files only when their route applies.
 - If repeated failed attempts pollute the session, summarize durable facts and restart from a cleaner context when supported.
 
+## Isolation
+
+When the host platform supports sandboxed or worktree-isolated execution:
+
+- Make each change in an isolated environment so verification does not depend on dirty local state.
+- Tear down the environment once the change is verified and merged.
+- If the host does not support isolation, explicitly note dirty-worktree assumptions in verification results.
+
 ## Delegation
 
 Use helper agents only when:
@@ -26,6 +34,14 @@ Do not delegate the immediate blocker. Give helpers explicit scope, expected out
 - Commit locally only when requested or when project workflow expects durable snapshots.
 - Never push, pull, fetch, or edit remotes unless explicitly requested.
 - Do not commit secrets, `.env*`, logs, dependency folders, chat history, private screenshots, or bulk generated output unless explicitly requested.
+
+## Anti-Entropy
+
+Codebases accumulate drift — duplicated patterns, stale docs, inconsistent conventions. Over time this degrades agent performance because agents replicate what they see, including uneven patterns.
+
+- When noticing a recurring anti-pattern, encode it as a mechanical check (lint rule, CI check) rather than fixing instances one-by-one.
+- If the host supports background or scheduled tasks, periodic "doc-gardening" or cleanup passes that scan for drift and open targeted fixes compound in value.
+- Capture human taste once, then enforce it continuously on every line of code.
 
 ## Final Response
 

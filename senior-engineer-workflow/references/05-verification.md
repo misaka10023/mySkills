@@ -9,10 +9,23 @@
 | Parser/transform | Valid, invalid, empty, boundary, and real sample inputs |
 | CLI/script | Minimal sample run; verify exit code and output |
 | API/backend | Focused service/route test or local request; check schema and error path |
-| Frontend/UI | Run app or component; check screenshot, console, responsive layout, loading and error states |
+| Frontend/UI | Run app or component; check screenshot, console, responsive layout, loading and error states. Verify as a user would — click through the flow, not just component renders. |
 | Build/tooling | Smallest lint/type/build command touching the changed surface |
 | Data migration | Dry run or sample run; verify counts and representative records |
 | Security/auth | Authorization, validation, secret handling, logging, dependency exposure |
+
+## End-to-End Preference
+
+Unit tests confirm code logic. They do not confirm the feature works. Prefer a verification path that exercises the change as a consumer or user would experience it — an HTTP request, a CLI invocation, a browser interaction. If the host platform provides browser automation, screenshot tools, or observable runtime output, use them to close the gap between "the code looks right" and "the feature actually works."
+
+## Self-Evaluation Is Unreliable
+
+When asked to evaluate their own work, agents reliably skew positive. For quality-critical changes:
+
+- Verify through a distinct pass: re-read the diff with fresh eyes after a pause.
+- If the host supports subagents, have a separate agent verify the change against its acceptance criteria.
+- Prefer mechanical checks (type checker, linter, test suite) over human-style review alone.
+- If verification is blocked, name the concrete blocker and the strongest substitute evidence used.
 
 ## If Verification Fails
 

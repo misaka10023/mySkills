@@ -29,6 +29,14 @@ Prefer sources in this order:
 - For broad topics, narrow by API, option name, framework version, or migration step.
 - Avoid copying long external text into the answer; summarize and link sources.
 
+## Agent Legibility
+
+From the agent's perspective, anything it cannot access in-context while running effectively does not exist. Knowledge that lives only in chat threads, external documents, or people's heads is invisible.
+
+- Push architectural decisions, conventions, plans, and design rationale into version-controlled repo artifacts (Markdown, schemas, config files).
+- Treat AGENTS.md / CLAUDE.md / project instruction files as a table of contents — a map that points to deeper sources of truth, not an encyclopedia.
+- Prefer dependencies and abstractions that can be fully reasoned about from repo-local information. Technologies that are stable, composable, and well-represented in training data give agents more leverage.
+
 ## Anti-Patterns
 
 - Implementing from remembered APIs when docs are current and available.
@@ -36,3 +44,4 @@ Prefer sources in this order:
 - Ignoring local lockfile versions.
 - Reporting a guess as a fact.
 - Searching the web before reading the project code that controls the behavior.
+- Keeping design decisions only in chat threads or external documents that future agent sessions cannot discover.
