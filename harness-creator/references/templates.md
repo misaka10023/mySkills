@@ -2,6 +2,89 @@
 
 Use these templates when creating repository artifacts. Adapt paths and sections to the project; do not create unused files.
 
+## Skill-Packaged Harness
+
+Use a skill as the required agent-facing package for every newly created harness:
+
+```text
+.agents/
+`-- skills/
+    `-- <skill-name>/
+        |-- SKILL.md
+        |-- agents/
+        |   `-- openai.yaml
+        |-- scripts/       # deterministic operations, only when needed
+        |-- references/    # detailed protocols and schemas loaded on demand
+        |-- assets/        # output templates, only when needed
+        `-- evals/         # realistic smoke prompts, fixtures, expectations
+.claude/
+`-- skills                # POSIX symlink or Windows Junction
+```
+
+Install once under `.agents/skills`; expose the same directory at `.claude/skills` for Claude Code compatibility. Do not copy the skill into both locations.
+
+Before running either platform command, require every existing `.agents`, `.agents/skills`, and `.claude` parent to be a real directory inside the project, not a symlink, Junction, or other reparse point. Create absent parents inside the project and validate them again before linking. Also verify that `.agents/skills/<skill-name>` is absent or belongs to the harness being updated. The only permitted directory link is `.claude/skills`; stop on a parent-link, file, broken-link, wrong-target, or ownership conflict.
+
+On POSIX systems, create the link from the project root after confirming the destination does not already contain user data:
+
+```bash
+mkdir -p .agents/skills .claude
+ln -s ../.agents/skills .claude/skills
+```
+
+On Windows PowerShell, use a directory Junction after the same conflict and boundary checks. `Junction` accepts an absolute target and does not require Developer Mode or administrator privileges:
+
+```powershell
+New-Item -ItemType Directory -Force .agents\skills, .claude | Out-Null
+$agentsSkills = (Resolve-Path .agents\skills).Path
+New-Item -ItemType Junction -Path .claude\skills -Target $agentsSkills | Out-Null
+$link = Get-Item -Force .claude\skills
+$linkTarget = [System.IO.Path]::GetFullPath([string]$link.Target)
+if ($link.LinkType -ne "Junction" -or
+    $linkTarget -ne $agentsSkills) {
+  throw "Claude skills junction does not resolve to .agents/skills"
+}
+```
+
+If `.claude/skills` already exists and is not the expected directory link, stop for explicit migration approval. Do not replace it or fall back to a second copy. Treat the link as an ignored local installation artifact on both platforms; a Windows Junction also stores an absolute target and must be recreated after moving or cloning the repository. Verify that both hosts resolve the same `SKILL.md`, then check `git check-ignore` and `git status`: canonical `.agents/skills` content must remain versionable and `.claude/skills` must remain ignored and reproducible from the install steps.
+
+Start `SKILL.md` with this shape and replace every placeholder:
+
+```markdown
+---
+name: <skill-name>
+description: <What the harness enables and concrete user contexts that should trigger it.>
+---
+
+# <Harness Display Name>
+
+State the outcome this harness produces and its central operating principle.
+
+## Route The Task
+
+Classify request variants and point each variant to only the resources it needs.
+
+## Workflow
+
+1. Inspect inputs and authoritative state.
+2. Define observable success and safety boundaries.
+3. Execute the next bounded action using bundled scripts or existing project tools.
+4. Verify environment outcomes.
+5. Record durable state and decide whether to continue, stop, or request approval.
+
+## Resources
+
+- Read `references/<topic>.md` when <specific condition>.
+- Run `scripts/<operation>` when <specific condition>.
+- Use `assets/<template>` when producing <specific artifact>.
+
+## Completion Gate
+
+List externally verifiable conditions for success, safety, state, and reporting.
+```
+
+The skill entrypoint should route and govern execution. Keep long schemas, domain detail, citations, and runbooks in `references/`; keep deterministic behavior in `scripts/`; reuse existing runtime code rather than copying it into the skill. Put essential behavior in host-neutral resources, not only in `agents/openai.yaml` or Claude-specific hooks.
+
 ## HARNESS.md
 
 ```markdown
@@ -202,4 +285,3 @@ Each eval must include:
 
 ## Next Session Instructions
 ```
-

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Harness Creator"
+  short_description: "Build and review agent and eval harnesses"
+  default_prompt: "Use $harness-creator to turn this agent idea into a project-local, skill-packaged, runnable harness."

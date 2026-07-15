@@ -1,0 +1,57 @@
+{
+  "skill_name": "harness-creator",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Read-only design evaluation: use the attached stale-schema-agent fixture as the complete repository evidence. Do not create, edit, or install files, and do not claim commands ran. Propose the smallest coding-agent harness improvement that teams can use from both Codex and Claude Code. Completion must be based on repository evidence rather than the agent's final message.",
+      "expected_output": "Proposes a project-local Skill entrypoint backed by the existing runtime, maps premature completion to an outcome-based verification control, defines a regression eval, and gives platform-correct single-source installation and verification commands without claiming they ran.",
+      "files": [
+        "evals/files/stale-schema-agent.md"
+      ],
+      "expectations": [
+        "The design keeps the existing migration runtime as execution owner and adds a thin .agents/skills entrypoint instead of duplicating runtime code.",
+        "The completion check compares generated/schema.sql with source/schema.yaml or regenerates and checks for a clean diff, and explicitly rejects the agent's final message as proof.",
+        "The POSIX route uses a relative .claude/skills symlink and the Windows route uses a Junction to the resolved .agents/skills directory.",
+        "The regression eval defines a clean fixture, a stale-output positive case, an up-to-date negative control, a reset or source-preservation check, and the intended verification command.",
+        "The response remains read-only and does not claim that files were installed or commands were executed."
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Review the attached refund-browser-harness fixture. Do not edit or invent files. Report the most important harness risks and missing tests with fixture line references. The agent can submit refunds and currently retries after timeouts.",
+      "expected_output": "Leads with severity-ordered findings grounded in the fixture and identifies duplicate submissions caused by missing idempotency, ambiguous timeout recovery, over-broad permissions, insufficient trace fields, and absent functional evals.",
+      "files": [
+        "evals/files/refund-browser-harness.md"
+      ],
+      "expectations": [
+        "The response is review-only and leads with findings ordered by severity.",
+        "Each finding cites fixture lines that semantically support the adjacent claim rather than merely mentioning the fixture path.",
+        "The review identifies missing idempotency keys and unsafe retry-after-timeout behavior.",
+        "The review identifies the unscoped refund credential and requires negative authorization tests for mismatched or expired task scope.",
+        "The review requires traces to capture request identity and provider transaction identity without sensitive raw values.",
+        "The controlled-timeout eval models provider acceptance before the first response is lost, retries with the same idempotency key, and asserts exactly one provider transaction and ledger effect.",
+        "The review calls for an explicit human approval boundary for refund execution."
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Read-only design evaluation: use the attached research-workflow fixture as the complete evidence. Do not create, edit, or install files, and do not claim commands ran. Specify a resumable harness that fresh agents can operate from both Codex and Claude Code. Production reports are read-only, and analyst approval is required before an improvement proposal enters the writable task queue.",
+      "expected_output": "Proposes a skill-packaged long-running and self-improving harness with progressive resources, durable checkpoints, fresh-agent handoff, read-only evidence separation, analyst gates, trace redaction, and resume-focused verification without claiming implementation.",
+      "files": [
+        "evals/files/research-workflow.md"
+      ],
+      "expectations": [
+        "The design separates immutable production evidence from the writable task queue.",
+        "A thin SKILL.md entrypoint under .agents/skills defines trigger conditions, routing, resource links, workflow, and a completion gate without duplicating runtime ownership.",
+        "Claude Code reaches the same canonical Skill content through .claude/skills using a POSIX symlink or Windows Junction, and verification checks identical resolved content.",
+        "The durable checkpoint records completed work, evidence references, verification status, and the next bounded action for a fresh agent.",
+        "Resume fails closed on stale state by validating a sequence, version, or content digest before continuing.",
+        "Missing, denied, or stale analyst approval blocks promotion, and approval is bound to the reviewed proposal digest in the audit trace.",
+        "Verification checks production evidence integrity before and after the run without writing to the evidence directory.",
+        "Trace and writable artifacts explicitly exclude raw sensitive customer identifiers.",
+        "Verification includes a fresh-agent resume scenario with no prior conversation context.",
+        "The response remains read-only and does not claim that files were installed or commands were executed."
+      ]
+    }
+  ]
+}
